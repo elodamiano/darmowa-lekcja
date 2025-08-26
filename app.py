@@ -207,7 +207,7 @@ def free_lesson():
             send_email(ADMIN_EMAIL, "SLAMY – nowy lead (darmowa lekcja)", admin_body, is_html=False)
 
         # Email to client (HTML, brand)
-        logo_url = os.environ.get("PUBLIC_LOGO_URL", "https://slamy.online/static/logo.svg")
+        logo_url = os.environ.get("PUBLIC_LOGO_URL", "https://slamy.online/static/logo.png")
         safe_topic_html = f"Zainteresowanie: <strong>{topic}</strong>." if topic else ""
         client_body_html = f"""
 <!doctype html>
