@@ -65,24 +65,13 @@ def init_db():
         )
         """
     )
-    # defensive migration for older versions missing columns
+    # defensive migration
     try:
         if not column_exists(conn, "leads", "phone"):
             cur.execute("ALTER TABLE leads ADD COLUMN phone TEXT")
-        if not column_exists(conn, "leads", "marketing_opt_in"):
-            cur.execute("ALTER TABLE leads ADD COLUMN marketing_opt_in BOOLEAN")
-        if not column_exists(conn, "leads", "utm_source"):
-            cur.execute("ALTER TABLE leads ADD COLUMN utm_source TEXT")
-        if not column_exists(conn, "leads", "utm_medium"):
-            cur.execute("ALTER TABLE leads ADD COLUMN utm_medium TEXT")
-        if not column_exists(conn, "leads", "utm_campaign"):
-            cur.execute("ALTER TABLE leads ADD COLUMN utm_campaign TEXT")
-        if not column_exists(conn, "leads", "utm_content"):
-            cur.execute("ALTER TABLE leads ADD COLUMN utm_content TEXT")
-        if not column_exists(conn, "leads", "user_agent"):
-            cur.execute("ALTER TABLE leads ADD COLUMN user_agent TEXT")
-        if not column_exists(conn, "leads", "ip"):
-            cur.execute("ALTER TABLE leads ADD COLUMN ip TEXT")
+        for col in ["marketing_opt_in","utm_source","utm_medium","utm_campaign","utm_content","user_agent","ip"]:
+            if not column_exists(conn, "leads", col):
+                cur.execute(f"ALTER TABLE leads ADD COLUMN {col} TEXT")
     except Exception:
         pass
 
@@ -92,13 +81,14 @@ def init_db():
 init_db()
 
 # ---------------- Email helpers ----------------
-def send_email(to_addr: str, subject: str, body: str):
-    """Send a plain-text email via SMTP using env configuration."""
+def send_email(to_addr: str, subject: str, body: str, is_html: bool=False):
+    """Send an email via SMTP using env configuration."""
     if not (EMAIL_HOST and EMAIL_PORT and EMAIL_USER and EMAIL_PASS and to_addr):
         print("Email not sent: SMTP env variables missing.")
         return
 
-    msg = MIMEText(body, "plain", "utf-8")
+    subtype = "html" if is_html else "plain"
+    msg = MIMEText(body, subtype, "utf-8")
     msg["Subject"] = str(Header(subject, "utf-8"))
     msg["From"] = formataddr((str(Header(EMAIL_FROM_NAME, "utf-8")), EMAIL_USER))
     msg["To"] = to_addr
@@ -153,7 +143,6 @@ def home():
 @app.route("/darmowa-lekcja", methods=["GET", "POST"])
 def free_lesson():
     if request.method == "POST":
-        
         name = request.form.get("name","").strip()
         email = request.form.get("email","").strip()
         phone = request.form.get("phone","").strip()
@@ -161,13 +150,10 @@ def free_lesson():
         topic_custom = request.form.get("topic_custom","").strip()
         if topic == "__other" and topic_custom:
             topic = topic_custom
-
         notes = request.form.get("notes","").strip()
         promo_code = request.form.get("promo_code","").strip()
         consent = request.form.get("consent") == "on"
         marketing_opt_in = request.form.get("marketing_opt_in") == "on"
-
-        
 
         # Basic validation
         errors = []
@@ -181,7 +167,6 @@ def free_lesson():
         if errors:
             for e in errors:
                 flash(e, "error")
-            # repopulate form
             prefill = dict(request.form)
             return render_template("form.html", prefill=prefill)
 
@@ -204,7 +189,7 @@ def free_lesson():
         }
         save_lead(data)
 
-        # Email to admin
+        # Email to admin (plain text)
         admin_body = (
             "SLAMY – nowy lead na darmową lekcję\n\n"
             f"Imię: {name}\n"
@@ -219,19 +204,88 @@ def free_lesson():
             f"Data: {datetime.utcnow().isoformat()} UTC\n"
         )
         if ADMIN_EMAIL:
-            send_email(ADMIN_EMAIL, "SLAMY – nowy lead (darmowa lekcja)", admin_body)
+            send_email(ADMIN_EMAIL, "SLAMY – nowy lead (darmowa lekcja)", admin_body, is_html=False)
 
-        # Email to client
-        client_body = (
-            f"Cześć {name},\n\n"
-            "Dziękujemy za zaufanie i zapisanie się na darmową lekcję 30 minut w SLAMY! 🚀\n\n"
-            "W ciągu 24h skontaktujemy się z Tobą z propozycją terminu oraz lektora, "
-            "który najlepiej pasuje do Twoich pasji.\n\n"
-            "Jeżeli chcesz przyspieszyć kontakt, odpowiedz na tego maila i podaj preferowane terminy.\n\n"
-            "Do zobaczenia w SLAMY!\nZespół SLAMY\n"
-        )
+        # Email to client (HTML, brand)
+        logo_url = os.environ.get("PUBLIC_LOGO_URL", "https://slamy.online/logo.svg")
+        safe_topic_html = f"Zainteresowanie: <strong>{topic}</strong>." if topic else ""
+        client_body_html = f"""
+<!doctype html>
+<html lang='pl'>
+  <head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width,initial-scale=1'>
+    <title>Dziękujemy – SLAMY</title>
+    <style>
+      .preheader {{ display:none!important; visibility:hidden; opacity:0; color:transparent; height:0; width:0; overflow:hidden; }}
+      @media (prefers-color-scheme: dark) {{
+        .card {{ background:#121212 !important; color:#EAEAEA !important; }}
+        .muted {{ color:#A9A9A9 !important; }}
+      }}
+    </style>
+  </head>
+  <body style="margin:0;background:#f4f6fb;font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;color:#111;">
+    <div class="preheader">Twoja darmowa lekcja 30 min w SLAMY – wkrótce odezwiemy się z terminem.</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6fb;padding:24px 0;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="560" cellpadding="0" cellspacing="0" class="card" style="background:#ffffff;border-radius:12px;overflow:hidden;">
+            <tr>
+              <td style="background:linear-gradient(135deg,#1B1464,#6C2BD9);padding:18px 22px;">
+                <table width="100%" role="presentation">
+                  <tr>
+                    <td align="left">
+                      <img src="{logo_url}" alt="SLAMY" height="28" style="display:block;border:0;outline:none;">
+                    </td>
+                    <td align="right" style="font-size:12px;color:#ffffff99;">Darmowa lekcja 30 min</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:24px 24px 8px 24px;">
+                <h1 style="margin:0 0 8px 0;font-size:20px;line-height:1.3;">Dziękujemy za zaufanie, {name}!</h1>
+                <p style="margin:0 0 12px 0;line-height:1.6;">
+                  Zgłoszenie na <strong>darmową lekcję 30&nbsp;min</strong> w SLAMY już do nas dotarło. ✨
+                </p>
+                <p style="margin:0 0 12px 0;line-height:1.6;">{safe_topic_html}</p>
+                <p style="margin:0 0 16px 0;line-height:1.6;">
+                  W ciągu <strong>24h</strong> skontaktujemy się z Tobą z propozycją terminu i lektora dobranego do Twoich pasji.
+                </p>
+                <table role="presentation" cellpadding="0" cellspacing="0" style="margin:10px 0 18px 0;">
+                  <tr>
+                    <td align="center" bgcolor="#1B1464" style="border-radius:10px;">
+                      <a href="mailto:kontakt@slamy.online?subject=SLAMY%20-%20Propozycja%20terminu%20lekcji"
+                         style="display:inline-block;padding:12px 18px;color:#fff;text-decoration:none;font-weight:600;border-radius:10px;">
+                        Przyspiesz kontakt – odpisz teraz
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:0 0 6px 0;line-height:1.6;">
+                  Jeśli wolisz telefon, daj znać w odpowiedzi – oddzwonimy.
+                </p>
+                <hr style="border:none;border-top:1px solid #E9ECF4;margin:18px 0;">
+                <p class="muted" style="margin:0;color:#6B7280;font-size:12px;line-height:1.5;">
+                  W SLAMY uczysz się <em>przez swoje pasje</em> z lektorem, który je podziela. To najszybszy sposób, by zacząć mówić swobodnie.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#f7f7fb;padding:14px 24px;color:#6B7280;font-size:12px;line-height:1.4;">
+                Ten e-mail został wysłany po wypełnieniu formularza na stronie SLAMY.
+                Jeśli to nie Ty – napisz do nas: <a href="mailto:kontakt@slamy.online" style="color:#6C2BD9;text-decoration:none;">kontakt@slamy.online</a>.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+"""
         if email:
-            send_email(email, "Dziękujemy za zaufanie – SLAMY darmowa lekcja", client_body)
+            send_email(email, "Dziękujemy za zaufanie – SLAMY darmowa lekcja", client_body_html, is_html=True)
 
         return redirect(url_for("thanks"))
 

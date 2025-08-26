@@ -19,6 +19,7 @@
     {% endwith %}
 
     <form method="post" class="grid grid-cols-1 gap-4">
+      <!-- Imię + E-mail -->
       <div class="grid md:grid-cols-2 gap-4">
         <div>
           <label class="block text-sm text-white/80 mb-1">Imię*</label>
@@ -30,6 +31,7 @@
         </div>
       </div>
 
+      <!-- Temat/pasja + Kod -->
       <div class="grid md:grid-cols-2 gap-4">
         <div>
           <label class="block text-sm text-white/80 mb-1">Temat/pasja</label>
@@ -42,15 +44,6 @@
             <option value="Egzamin (IELTS/FCE itp.)" {% if prefill.get('topic')=='Egzamin (IELTS/FCE itp.)' %}selected{% endif %}>Egzamin (IELTS/FCE itp.)</option>
             <option value="__other" {% if prefill.get('topic')=='__other' %}selected{% endif %}>Inna… (wpisz własną)</option>
           </select>
-          <input
-            id="topicCustom"
-            name="topic_custom"
-            value="{{ prefill.get('topic_custom','') }}"
-            class="w-full rounded-xl px-4 py-3 text-black mt-2 hidden"
-            placeholder="Wpisz własną pasję – a my wszystko przygotujemy"
-            aria-hidden="true"
-          >
-          <p class="text-xs text-white/60 mt-1">Możesz wybrać z listy albo wpisać własną – przygotujemy materiały pod Ciebie.</p>
         </div>
 
         <div>
@@ -59,6 +52,20 @@
         </div>
       </div>
 
+      <!-- Własna pasja – pełna szerokość -->
+      <div id="topicCustomWrap" class="hidden md:col-span-2">
+        <input
+          id="topicCustom"
+          name="topic_custom"
+          value="{{ prefill.get('topic_custom','') }}"
+          class="w-full rounded-xl px-4 py-3 text-black"
+          placeholder="Wpisz własną pasję – a my wszystko przygotujemy"
+          aria-hidden="true"
+        >
+        <p class="text-xs text-white/60 mt-1">Możesz wybrać z listy albo wpisać własną – przygotujemy materiały pod Ciebie.</p>
+      </div>
+
+      <!-- Telefon -->
       <div>
         <label class="block text-sm text-white/80 mb-1">Telefon (opcjonalnie)</label>
         <input type="tel" name="phone" value="{{ prefill.get('phone','') }}"
@@ -66,11 +73,13 @@
         <p class="text-xs text-white/60 mt-1">Jeżeli chcesz błyskawicznego kontaktu, zostaw swój numer telefonu.</p>
       </div>
 
+      <!-- Notatki -->
       <div>
         <label class="block text-sm text-white/80 mb-1">Preferencje czasowe / dodatkowe informacje</label>
         <textarea name="notes" rows="3" class="w-full rounded-xl px-4 py-3 text-black" placeholder="Np. wieczory po 18:00; poziom B1; chcę rozmawiać o podróżach.">{{ prefill.get('notes','') }}</textarea>
       </div>
 
+      <!-- Zgody -->
       <div class="space-y-2">
         <label class="inline-flex items-start gap-2">
           <input type="checkbox" name="consent" class="mt-1" {% if prefill.get('consent') %}checked{% endif %}>
@@ -82,6 +91,7 @@
         </label>
       </div>
 
+      <!-- CTA + USP -->
       <button class="mt-2 inline-flex items-center justify-center rounded-xl bg-white text-black font-semibold px-5 py-3 hover:opacity-90 transition">
         Zarezerwuj darmową lekcję
       </button>
@@ -98,16 +108,18 @@
   <script>
     (function () {
       const sel = document.getElementById('topicSelect');
+      const wrap = document.getElementById('topicCustomWrap');
       const custom = document.getElementById('topicCustom');
 
       function toggleCustom(){
+        if (!sel || !wrap) return;
         if (sel.value === '__other') {
-          custom.classList.remove('hidden');
-          custom.setAttribute('aria-hidden','false');
-          if (!custom.value) custom.focus();
+          wrap.classList.remove('hidden');
+          custom && custom.setAttribute('aria-hidden','false');
+          if (custom && !custom.value) custom.focus();
         } else {
-          custom.classList.add('hidden');
-          custom.setAttribute('aria-hidden','true');
+          wrap.classList.add('hidden');
+          custom && custom.setAttribute('aria-hidden','true');
         }
       }
 

@@ -1,38 +1,50 @@
-
 {% extends "base.html" %}
 {% block content %}
-  <div class="space-y-4">
-    <div class="flex items-center justify-between">
+  <div class="space-y-5">
+    <div class="flex items-center justify-between flex-wrap gap-3">
       <h1 class="text-2xl font-bold">Leady – darmowa lekcja</h1>
-      <a href="/admin/export.csv" class="underline">Pobierz CSV</a>
+      <div class="flex items-center gap-3">
+        <a href="/admin/export.csv" class="underline">Pobierz CSV</a>
+        <a href="/darmowa-lekcja" class="underline">Formularz</a>
+      </div>
     </div>
-    <div class="overflow-x-auto">
-      <table class="min-w-full text-sm">
-        <thead>
-          <tr class="text-left text-white/80">
-            <th class="py-2 pr-4">#</th>
-            <th class="py-2 pr-4">Data</th>
-            <th class="py-2 pr-4">Imię</th>
-            <th class="py-2 pr-4">E‑mail</th>
-            <th class="py-2 pr-4">Temat</th>
-            <th class="py-2 pr-4">Kod</th>
-            <th class="py-2 pr-4">Marketing</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for r in leads %}
-          <tr class="border-t border-white/10">
-            <td class="py-2 pr-4">{{ r['id'] }}</td>
-            <td class="py-2 pr-4">{{ r['created_at'] }}</td>
-            <td class="py-2 pr-4">{{ r['name'] }}</td>
-            <td class="py-2 pr-4">{{ r['email'] }}</td>
-            <td class="py-2 pr-4">{{ r['topic'] }}</td>
-            <td class="py-2 pr-4">{{ r['promo_code'] }}</td>
-            <td class="py-2 pr-4">{{ 'TAK' if r['marketing_opt_in'] else 'NIE' }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+
+    {% if leads|length == 0 %}
+      <div class="rounded-xl bg-white/10 p-5 text-white/80">
+        Brak leadów. Formularz dostępny pod <span class="underline">/darmowa-lekcja</span>.  
+        Po wypełnieniu pojawią się tutaj.
+      </div>
+    {% else %}
+      <div class="overflow-x-auto">
+        <table class="min-w-[800px] w-full text-sm">
+          <thead>
+            <tr class="text-left text-white/80">
+              <th class="py-2 pr-4">#</th>
+              <th class="py-2 pr-4">Data (UTC)</th>
+              <th class="py-2 pr-4">Imię</th>
+              <th class="py-2 pr-4">E-mail</th>
+              <th class="py-2 pr-4">Telefon</th>
+              <th class="py-2 pr-4">Temat/pasja</th>
+              <th class="py-2 pr-4">Kod</th>
+              <th class="py-2 pr-4">Marketing</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in leads %}
+            <tr class="border-t border-white/10">
+              <td class="py-2 pr-4">{{ r['id'] }}</td>
+              <td class="py-2 pr-4">{{ r['created_at'] }}</td>
+              <td class="py-2 pr-4">{{ r['name'] }}</td>
+              <td class="py-2 pr-4">{{ r['email'] }}</td>
+              <td class="py-2 pr-4">{{ r['phone'] or '—' }}</td>
+              <td class="py-2 pr-4">{{ r['topic'] or '—' }}</td>
+              <td class="py-2 pr-4">{{ r['promo_code'] or '—' }}</td>
+              <td class="py-2 pr-4">{{ 'TAK' if r['marketing_opt_in'] else 'NIE' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
   </div>
 {% endblock %}
