@@ -1,0 +1,29 @@
+
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SLAMY – Darmowa lekcja 30 minut</title>
+  <meta name="description" content="Zarezerwuj darmową 30‑minutową lekcję angielskiego w SLAMY. Ucz się przez swoje pasje.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+    .brand-gradient { background: linear-gradient(135deg, #1B1464 0%, #6C2BD9 100%); }
+    .card { backdrop-filter: blur(6px); }
+    .shadow-soft { box-shadow: 0 10px 30px rgba(0,0,0,.20); }
+  </style>
+</head>
+<body class="min-h-screen brand-gradient flex items-center justify-center p-6 text-white">
+  <div class="w-full max-w-3xl">
+    <div class="bg-white/10 rounded-2xl p-6 md:p-8 shadow-soft card">
+      {% block content %}{% endblock %}
+    </div>
+    <p class="text-xs text-white/70 mt-4 text-center">
+      © {{ 2025 }} SLAMY · <a href="#" class="underline">Regulamin</a> · <a href="#" class="underline">Polityka prywatności</a>
+    </p>
+  </div>
+</body>
+</html>
