@@ -45,7 +45,7 @@
             <option value="__other" {% if prefill.get('topic')=='__other' %}selected{% endif %}>Inna… (wpisz własną)</option>
           </select>
 
-          <!-- Własna pasja – POD SELECTEM (stabilnie, bez col-span) -->
+          <!-- Własna pasja – pod selectem (stabilnie) -->
           <input
             id="topicCustom"
             name="topic_custom"
@@ -63,19 +63,18 @@
         </div>
       </div>
 
-      <!-- Telefon + Notatki -->
-      <div class="grid md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm text-white/80 mb-1">Telefon (opcjonalnie)</label>
-          <input type="tel" name="phone" value="{{ prefill.get('phone','') }}"
-                 class="w-full rounded-xl px-4 py-3 text-black" placeholder="+48 600 123 456">
-          <p class="text-xs text-white/60 mt-1">Jeżeli chcesz błyskawicznego kontaktu, zostaw swój numer telefonu.</p>
-        </div>
+      <!-- Telefon (pełna szerokość) -->
+      <div>
+        <label class="block text-sm text-white/80 mb-1">Telefon (opcjonalnie)</label>
+        <input type="tel" name="phone" value="{{ prefill.get('phone','') }}"
+               class="w-full rounded-xl px-4 py-3 text-black" placeholder="+48 600 123 456">
+        <p class="text-xs text-white/60 mt-1">Jeżeli chcesz błyskawicznego kontaktu, zostaw swój numer telefonu.</p>
+      </div>
 
-        <div>
-          <label class="block text-sm text-white/80 mb-1">Preferencje czasowe / dodatkowe informacje</label>
-          <textarea name="notes" rows="3" class="w-full rounded-xl px-4 py-3 text-black" placeholder="Np. wieczory po 18:00; poziom B1; chcę rozmawiać o podróżach z [Imię lektora].">{{ prefill.get('notes','') }}</textarea>
-        </div>
+      <!-- Notatki (pełna szerokość) -->
+      <div>
+        <label class="block text-sm text-white/80 mb-1">Preferencje czasowe / dodatkowe informacje</label>
+        <textarea name="notes" rows="3" class="w-full rounded-xl px-4 py-3 text-black" placeholder="Np. wieczory po 18:00; poziom B1; chcę rozmawiać o podróżach.">{{ prefill.get('notes','') }}</textarea>
       </div>
 
       <!-- Zgody -->
@@ -90,16 +89,21 @@
         </label>
       </div>
 
-      <!-- CTA + USP -->
-      <div class="grid md:grid-cols-2 gap-4">
-        <button class="w-full inline-flex items-center justify-center rounded-xl bg-white text-black font-semibold px-5 py-3 hover:opacity-90 transition">
-          Zarezerwuj darmową lekcję
-        </button>
+      <!-- CTA -->
+      <button class="w-full inline-flex items-center justify-center rounded-xl bg-white text-black font-semibold px-5 py-3 hover:opacity-90 transition">
+        Zarezerwuj darmową lekcję
+      </button>
 
-        <div class="grid grid-cols-3 gap-3 text-sm text-white/80">
-          <div class="bg-white/10 rounded-xl p-3 text-center">0 zł za pierwszą</div>
-          <div class="bg-white/10 rounded-xl p-3 text-center">Bez zobowiązań</div>
-          <div class="bg-white/10 rounded-xl p-3 text-center">Wyselekcjonowani lektorzy</div>
+      <!-- USP badges – zawsze mieszczą tekst -->
+      <div class="grid grid-cols-3 gap-3 text-xs md:text-sm text-white/80">
+        <div class="bg-white/10 rounded-xl px-3 py-3 text-center leading-snug break-words min-h-[56px] flex items-center justify-center">
+          0 zł za pierwszą
+        </div>
+        <div class="bg-white/10 rounded-xl px-3 py-3 text-center leading-snug break-words min-h-[56px] flex items-center justify-center">
+          Bez zobowiązań
+        </div>
+        <div class="bg-white/10 rounded-xl px-3 py-3 text-center leading-snug break-words min-h-[56px] flex items-center justify-center">
+          Wyselekcjonowani lektorzy
         </div>
       </div>
     </form>
