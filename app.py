@@ -153,14 +153,21 @@ def home():
 @app.route("/darmowa-lekcja", methods=["GET", "POST"])
 def free_lesson():
     if request.method == "POST":
+        
         name = request.form.get("name","").strip()
         email = request.form.get("email","").strip()
         phone = request.form.get("phone","").strip()
         topic = request.form.get("topic","").strip()
+        topic_custom = request.form.get("topic_custom","").strip()
+        if topic == "__other" and topic_custom:
+            topic = topic_custom
+
         notes = request.form.get("notes","").strip()
         promo_code = request.form.get("promo_code","").strip()
         consent = request.form.get("consent") == "on"
         marketing_opt_in = request.form.get("marketing_opt_in") == "on"
+
+        
 
         # Basic validation
         errors = []
