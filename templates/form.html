@@ -94,11 +94,17 @@
         Zarezerwuj darmową lekcję
       </button>
 
-      <!-- USP badges – mobilne safe -->
-      <div class="grid grid-cols-3 gap-3 text-xs md:text-sm text-white/80">
-        <div class="badge">0 zł za pierwszą</div>
-        <div class="badge">Bez zobowiązań</div>
-        <div class="badge">Wyselekcjonow&shy;ani lektorzy</div>
+      <!-- USP badges – mobilne full width + emoji -->
+      <div class="grid gap-3 text-xs md:text-sm text-white/80 grid-cols-1 md:grid-cols-3">
+        <div class="bg-white/10 rounded-xl px-3 py-3 text-center leading-snug min-h-[56px] flex items-center justify-center">
+          🎁 0 zł za pierwszą
+        </div>
+        <div class="bg-white/10 rounded-xl px-3 py-3 text-center leading-snug min-h-[56px] flex items-center justify-center">
+          ✅ Bez zobowiązań
+        </div>
+        <div class="bg-white/10 rounded-xl px-3 py-3 text-center leading-snug min-h-[56px] flex items-center justify-center">
+          👩‍🏫 Wyselekcjonowani lektorzy
+        </div>
       </div>
     </form>
   </div>
@@ -121,7 +127,6 @@
         }
       }
 
-      // jeśli backend zwrócił już wpisaną własną pasję — pokaż pole i ustaw select na "__other"
       if (custom && custom.value && sel && sel.value !== '__other') {
         sel.value = '__other';
       }
