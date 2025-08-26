@@ -1,15 +1,14 @@
-
 import os
 import sqlite3
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file, Response
+from flask import Flask, render_template, request, redirect, url_for, flash, session, Response
 from dotenv import load_dotenv
 
-# Optional notifications
-try:
-    import requests
-except Exception:
-    requests = None
+# --- Email (SMTP) ---
+import smtplib
+from email.mime.text import MIMEText
+from email.header import Header
+from email.utils import formataddr
 
 load_dotenv()
 
@@ -18,18 +17,32 @@ app.secret_key = os.environ.get("SECRET_KEY", "slamy-dev-secret")
 
 DB_PATH = os.environ.get("DB_PATH", "leads.db")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
-# --- DB helpers ---
+# SMTP config
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
+EMAIL_USER = os.environ.get("EMAIL_USER", "")
+EMAIL_PASS = os.environ.get("EMAIL_PASS", "")
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "")
+EMAIL_FROM_NAME = os.environ.get("EMAIL_FROM_NAME", "SLAMY")
+EMAIL_USE_TLS = (os.environ.get("EMAIL_USE_TLS", "true").lower() != "false")
+
+# ---------------- DB helpers ----------------
 def get_conn():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
+def column_exists(conn, table, column):
+    cur = conn.cursor()
+    cur.execute(f"PRAGMA table_info({table})")
+    cols = [r[1] for r in cur.fetchall()]
+    return column in cols
+
 def init_db():
     conn = get_conn()
     cur = conn.cursor()
+    # base table
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS leads (
@@ -37,6 +50,7 @@ def init_db():
             created_at TEXT NOT NULL,
             name TEXT NOT NULL,
             email TEXT NOT NULL,
+            phone TEXT,
             topic TEXT,
             notes TEXT,
             promo_code TEXT,
@@ -51,35 +65,70 @@ def init_db():
         )
         """
     )
+    # defensive migration for older versions missing columns
+    try:
+        if not column_exists(conn, "leads", "phone"):
+            cur.execute("ALTER TABLE leads ADD COLUMN phone TEXT")
+        if not column_exists(conn, "leads", "marketing_opt_in"):
+            cur.execute("ALTER TABLE leads ADD COLUMN marketing_opt_in BOOLEAN")
+        if not column_exists(conn, "leads", "utm_source"):
+            cur.execute("ALTER TABLE leads ADD COLUMN utm_source TEXT")
+        if not column_exists(conn, "leads", "utm_medium"):
+            cur.execute("ALTER TABLE leads ADD COLUMN utm_medium TEXT")
+        if not column_exists(conn, "leads", "utm_campaign"):
+            cur.execute("ALTER TABLE leads ADD COLUMN utm_campaign TEXT")
+        if not column_exists(conn, "leads", "utm_content"):
+            cur.execute("ALTER TABLE leads ADD COLUMN utm_content TEXT")
+        if not column_exists(conn, "leads", "user_agent"):
+            cur.execute("ALTER TABLE leads ADD COLUMN user_agent TEXT")
+        if not column_exists(conn, "leads", "ip"):
+            cur.execute("ALTER TABLE leads ADD COLUMN ip TEXT")
+    except Exception:
+        pass
+
     conn.commit()
     conn.close()
 
 init_db()
 
-# --- Utils ---
-def notify_telegram(text: str):
-    if not (TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID and requests):
+# ---------------- Email helpers ----------------
+def send_email(to_addr: str, subject: str, body: str):
+    """Send a plain-text email via SMTP using env configuration."""
+    if not (EMAIL_HOST and EMAIL_PORT and EMAIL_USER and EMAIL_PASS and to_addr):
+        print("Email not sent: SMTP env variables missing.")
         return
-    try:
-        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-        payload = {"chat_id": TELEGRAM_CHAT_ID, "text": text, "parse_mode": "HTML", "disable_web_page_preview": True}
-        requests.post(url, json=payload, timeout=5)
-    except Exception:
-        pass
 
+    msg = MIMEText(body, "plain", "utf-8")
+    msg["Subject"] = str(Header(subject, "utf-8"))
+    msg["From"] = formataddr((str(Header(EMAIL_FROM_NAME, "utf-8")), EMAIL_USER))
+    msg["To"] = to_addr
+
+    try:
+        with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT, timeout=15) as server:
+            if EMAIL_USE_TLS:
+                server.starttls()
+            server.login(EMAIL_USER, EMAIL_PASS)
+            server.send_message(msg)
+    except Exception as e:
+        print("Email error:", e)
+
+# ---------------- Data helpers ----------------
 def save_lead(data):
     conn = get_conn()
     cur = conn.cursor()
     cur.execute(
         """
-        INSERT INTO leads (created_at, name, email, topic, notes, promo_code, consent, marketing_opt_in,
-                           utm_source, utm_medium, utm_campaign, utm_content, user_agent, ip)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO leads (
+            created_at, name, email, phone, topic, notes, promo_code, consent, marketing_opt_in,
+            utm_source, utm_medium, utm_campaign, utm_content, user_agent, ip
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             datetime.utcnow().isoformat(),
             data.get("name","").strip(),
             data.get("email","").strip().lower(),
+            data.get("phone","").strip(),
             data.get("topic","").strip(),
             data.get("notes","").strip(),
             data.get("promo_code","").strip(),
@@ -89,14 +138,14 @@ def save_lead(data):
             data.get("utm_medium"),
             data.get("utm_campaign"),
             data.get("utm_content"),
-            request.headers.get("User-Agent",""),
-            request.headers.get("X-Forwarded-For", request.remote_addr)
+            data.get("user_agent",""),
+            data.get("ip",""),
         )
     )
     conn.commit()
     conn.close()
 
-# --- Routes ---
+# ---------------- Routes ----------------
 @app.get("/")
 def home():
     return redirect(url_for("free_lesson"))
@@ -106,6 +155,7 @@ def free_lesson():
     if request.method == "POST":
         name = request.form.get("name","").strip()
         email = request.form.get("email","").strip()
+        phone = request.form.get("phone","").strip()
         topic = request.form.get("topic","").strip()
         notes = request.form.get("notes","").strip()
         promo_code = request.form.get("promo_code","").strip()
@@ -124,23 +174,57 @@ def free_lesson():
         if errors:
             for e in errors:
                 flash(e, "error")
-            return render_template("form.html", prefill=request.form)
+            # repopulate form
+            prefill = dict(request.form)
+            return render_template("form.html", prefill=prefill)
 
         # Save & notify
         data = {
-            "name": name, "email": email, "topic": topic, "notes": notes,
-            "promo_code": promo_code, "consent": consent, "marketing_opt_in": marketing_opt_in,
+            "name": name,
+            "email": email,
+            "phone": phone,
+            "topic": topic,
+            "notes": notes,
+            "promo_code": promo_code,
+            "consent": consent,
+            "marketing_opt_in": marketing_opt_in,
             "utm_source": request.args.get("utm_source"),
             "utm_medium": request.args.get("utm_medium"),
             "utm_campaign": request.args.get("utm_campaign"),
             "utm_content": request.args.get("utm_content"),
+            "user_agent": request.headers.get("User-Agent",""),
+            "ip": request.headers.get("X-Forwarded-For", request.remote_addr),
         }
         save_lead(data)
 
-        notify_telegram(
-            f"🆕 <b>SLAMY: nowy lead na darmową lekcję</b>\n"
-            f"👤 {name}\n✉️ {email}\n🎯 Temat: {topic or '-'}\n📝 Notatki: {notes or '-'}\n🏷 Kod: {promo_code or '-'}"
+        # Email to admin
+        admin_body = (
+            "SLAMY – nowy lead na darmową lekcję\n\n"
+            f"Imię: {name}\n"
+            f"E-mail: {email}\n"
+            f"Telefon: {phone or '-'}\n"
+            f"Temat/pasja: {topic or '-'}\n"
+            f"Notatki: {notes or '-'}\n"
+            f"Kod: {promo_code or '-'}\n"
+            f"UTM: {data.get('utm_source')}/{data.get('utm_medium')}/{data.get('utm_campaign')}/{data.get('utm_content')}\n"
+            f"UA: {data.get('user_agent','')}\n"
+            f"IP: {data.get('ip','')}\n"
+            f"Data: {datetime.utcnow().isoformat()} UTC\n"
         )
+        if ADMIN_EMAIL:
+            send_email(ADMIN_EMAIL, "SLAMY – nowy lead (darmowa lekcja)", admin_body)
+
+        # Email to client
+        client_body = (
+            f"Cześć {name},\n\n"
+            "Dziękujemy za zaufanie i zapisanie się na darmową lekcję 30 minut w SLAMY! 🚀\n\n"
+            "W ciągu 24h skontaktujemy się z Tobą z propozycją terminu oraz lektora, "
+            "który najlepiej pasuje do Twoich pasji.\n\n"
+            "Jeżeli chcesz przyspieszyć kontakt, odpowiedz na tego maila i podaj preferowane terminy.\n\n"
+            "Do zobaczenia w SLAMY!\nZespół SLAMY\n"
+        )
+        if email:
+            send_email(email, "Dziękujemy za zaufanie – SLAMY darmowa lekcja", client_body)
 
         return redirect(url_for("thanks"))
 
@@ -154,7 +238,7 @@ def free_lesson():
 def thanks():
     return render_template("thanks.html")
 
-# --- Admin (very light) ---
+# ---------------- Admin (light) ----------------
 @app.route("/admin", methods=["GET", "POST"])
 def admin():
     if request.method == "POST":
@@ -171,7 +255,12 @@ def admin():
 
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute("SELECT id, created_at, name, email, topic, promo_code, marketing_opt_in FROM leads ORDER BY id DESC LIMIT 200")
+    cur.execute("""
+        SELECT id, created_at, name, email, phone, topic, promo_code, marketing_opt_in
+        FROM leads
+        ORDER BY id DESC
+        LIMIT 200
+    """)
     rows = cur.fetchall()
     conn.close()
     return render_template("admin.html", leads=rows)
@@ -184,17 +273,19 @@ def export_csv():
     cur = conn.cursor()
     cur.execute("SELECT * FROM leads ORDER BY id DESC")
     rows = cur.fetchall()
-    conn.close()
-    # Build CSV
     headers = [d[0] for d in cur.description] if cur.description else []
+    conn.close()
+
     import csv
     from io import StringIO
     sio = StringIO()
     writer = csv.writer(sio)
-    # Write header
     writer.writerow(headers)
     for r in rows:
-        writer.writerow([r[h] if isinstance(r, sqlite3.Row) else r for h in headers])
+        if isinstance(r, sqlite3.Row):
+            writer.writerow([r[h] for h in headers])
+        else:
+            writer.writerow(r)
     csv_data = sio.getvalue()
     return Response(
         csv_data,
@@ -205,5 +296,5 @@ def export_csv():
     )
 
 if __name__ == "__main__":
-    # For local testing
+    # Local test run
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

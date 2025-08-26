@@ -50,8 +50,14 @@
       </div>
 
       <div>
+        <label class="block text-sm text-white/80 mb-1">Telefon (opcjonalnie)</label>
+        <input type="tel" name="phone" value="{{ prefill.get('phone','') }}" 
+               class="w-full rounded-xl px-4 py-3 text-black" placeholder="+48 600 123 456">
+        <p class="text-xs text-white/60 mt-1">Jeżeli chcesz błyskawicznego kontaktu, zostaw swój numer telefonu.</p>
+      </div>
+      <div>
         <label class="block text-sm text-white/80 mb-1">Preferencje czasowe / dodatkowe informacje</label>
-        <textarea name="notes" rows="3" class="w-full rounded-xl px-4 py-3 text-black" placeholder="Np. wieczory po 18:00; poziom B1; chcę rozmawiać o podróżach.">{{ prefill.get('notes','') }}</textarea>
+        <textarea name="notes" rows="3" class="w-full rounded-xl px-4 py-3 text-black" placeholder="Np. wieczory po 18:00; poziom B1; chcę rozmawiać o podróżach z [Imię].">{{ prefill.get('notes','') }}</textarea>
       </div>
 
       <div class="space-y-2">

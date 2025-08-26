@@ -1,11 +1,10 @@
-
 <!doctype html>
 <html lang="pl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SLAMY – Darmowa lekcja 30 minut</title>
-  <meta name="description" content="Zarezerwuj darmową 30‑minutową lekcję angielskiego w SLAMY. Ucz się przez swoje pasje.">
+  <title>SLAMY – Darmowa lekcja próbna</title>
+  <meta name="description" content="Zarezerwuj darmową 30-minutową lekcję angielskiego w SLAMY. Ucz się przez swoje pasje.">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -16,14 +15,23 @@
     .shadow-soft { box-shadow: 0 10px 30px rgba(0,0,0,.20); }
   </style>
 </head>
-<body class="min-h-screen brand-gradient flex items-center justify-center p-6 text-white">
-  <div class="w-full max-w-3xl">
-    <div class="bg-white/10 rounded-2xl p-6 md:p-8 shadow-soft card">
-      {% block content %}{% endblock %}
+<body class="min-h-screen brand-gradient flex flex-col">
+  <!-- 🔹 HEADER z logotypem -->
+  <header class="w-full p-4 flex items-center">
+    <a href="/" class="flex items-center gap-2">
+      <img src="/static/logo.png" alt="SLAMY" class="h-8">
+    </a>
+  </header>
+
+  <main class="flex-1 flex items-center justify-center p-6 text-white">
+    <div class="w-full max-w-3xl">
+      <div class="bg-white/10 rounded-2xl p-6 md:p-8 shadow-soft card">
+        {% block content %}{% endblock %}
+      </div>
+      <p class="text-xs text-white/70 mt-4 text-center">
+        © {{ 2025 }} SLAMY · <a href="#" class="underline">Regulamin</a> · <a href="#" class="underline">Polityka prywatności</a>
+      </p>
     </div>
-    <p class="text-xs text-white/70 mt-4 text-center">
-      © {{ 2025 }} SLAMY · <a href="#" class="underline">Regulamin</a> · <a href="#" class="underline">Polityka prywatności</a>
-    </p>
-  </div>
+  </main>
 </body>
 </html>
