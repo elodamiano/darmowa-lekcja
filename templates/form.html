@@ -50,37 +50,28 @@
         </label>
       </div>
 
-      <!-- CTA — brand gradient + glow -->
+      <!-- CTA — premium indigo gradient (pro, bez „tęczy”) -->
       <button type="submit" id="ctaSubmit"
         class="group relative w-full inline-flex items-center justify-center rounded-xl
-               bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-cyan-400
+               bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-500
                text-white font-semibold md:text-lg py-3.5 px-6
-               shadow-lg shadow-indigo-500/20 hover:shadow-cyan-500/30
-               transition-all duration-200 active:scale-[.99]
-               focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30
+               shadow-lg shadow-indigo-500/25 hover:shadow-violet-500/30
+               transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0
+               focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/25
                disabled:opacity-60 disabled:cursor-not-allowed">
-        <span class="pointer-events-none">Zarezerwuj bezpłatną lekcję</span>
+        <!-- subtelny „połysk” -->
+        <span class="pointer-events-none relative">
+          Zarezerwuj bezpłatną lekcję
+          <span class="absolute -inset-x-3 -top-2 h-1/2 bg-white/10 rounded-full blur-md -z-10"></span>
+        </span>
         <svg class="ml-2 w-5 h-5 translate-x-0 group-hover:translate-x-0.5 transition-transform pointer-events-none"
              viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
-
-      <!-- USP badges -->
-      <div class="grid gap-3 text-xs md:text-sm text-white/80 grid-cols-1 md:grid-cols-3">
-        <div class="bg-white/10 rounded-xl px-3 py-3 text-center leading-snug min-h-[56px] flex items-center justify-center">
-          🎁 0 zł za pierwszą lekcję
-        </div>
-        <div class="bg-white/10 rounded-xl px-3 py-3 text-center leading-snug min-h-[56px] flex items-center justify-center">
-          ✅ Bez zobowiązań
-        </div>
-        <div class="bg-white/10 rounded-xl px-3 py-3 text-center leading-snug min-h-[56px] flex items-center justify-center">
-          👩‍🏫 Wyselekcjonowani lektorzy
-        </div>
-      </div>
     </form>
 
-    <!-- Disable CTA on submit (anty double-click) -->
+    <!-- Disable CTA on submit (anti double-click) -->
     <script>
       (function () {
         const form = document.currentScript.closest('form');
