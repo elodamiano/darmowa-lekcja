@@ -2,8 +2,7 @@
 {% block content %}
   <div class="space-y-6">
     <div class="text-center">
-      <h1 class="text-2xl md:text-3xl font-bold">Darmowa lekcja angielskiego – 30 minut</h1>
-      <p class="text-white/80 mt-2">Podaj kod <span class="font-semibold">SLAMY30</span> i zarezerwuj termin w 5 kliknięciach. Bez zobowiązań.</p>
+      <h1 class="text-2xl md:text-3xl font-bold">Darmowa lekcja angielskiego online – 30-45 minut</h1>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -48,10 +47,6 @@
           <input type="checkbox" name="consent" class="mt-1" {% if prefill.get('consent') %}checked{% endif %}>
           <span class="text-sm text-white/80">Akceptuję regulamin i politykę prywatności oraz wyrażam zgodę na kontakt w sprawie lekcji. *</span>
         </label>
-        <label class="inline-flex items-start gap-2">
-          <input type="checkbox" name="marketing_opt_in" class="mt-1" {% if prefill.get('marketing_opt_in') %}checked{% endif %}>
-          <span class="text-sm text-white/60">Chcę otrzymywać informacje o zniżkach i nowościach SLAMY.</span>
-        </label>
       </div>
 
       <!-- CTA -->
@@ -62,13 +57,13 @@
       <!-- USP badges -->
       <div class="grid gap-3 text-xs md:text-sm text-white/80 grid-cols-1 md:grid-cols-3">
         <div class="bg-white/10 rounded-xl px-3 py-3 text-center leading-snug min-h-[56px] flex items-center justify-center">
-          🎁 0 zł za pierwszą
+           0 zł za pierwszą
         </div>
         <div class="bg-white/10 rounded-xl px-3 py-3 text-center leading-snug min-h-[56px] flex items-center justify-center">
-          ✅ Bez zobowiązań
+          Bez zobowiązań
         </div>
         <div class="bg-white/10 rounded-xl px-3 py-3 text-center leading-snug min-h-[56px] flex items-center justify-center">
-          👩‍🏫 Wyselekcjonowani lektorzy
+          Wyselekcjonowani lektorzy
         </div>
       </div>
     </form>
