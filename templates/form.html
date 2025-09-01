@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% comment %} {% extends "base.html" %}
 {% block content %}
   <div class="space-y-6">
     <div class="text-center">
@@ -134,4 +134,146 @@
       toggleCustom();
     })();
   </script>
+{% endblock %} {% endcomment %}
+
+
+
+{% extends "base.html" %}
+{% block content %}
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- FORM -->
+    <div class="space-y-6">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold">Umów darmową lekcję teraz</h1>
+        <p class="text-white/80 mt-2">30 minut 1-na-1. Zero zobowiązań. Zapis w <span class="font-semibold">15 sekund</span>.</p>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="space-y-2">
+            {% for category, msg in messages %}
+              <div class="rounded-lg p-3 {% if category=='error' %}bg-red-500/20 border border-red-400/40{% else %}bg-green-500/20 border border-green-400/40{% endif %}">
+                {{ msg }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="post" class="space-y-4" novalidate>
+        <!-- Honeypot (anty-spam, ukryty) -->
+        <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true">
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-white/80 mb-1" for="name">Imię*</label>
+            <input id="name" name="name" value="{{ prefill.get('name','') }}" required
+                   class="w-full rounded-xl px-4 py-3 text-black"
+                   placeholder="np. Anna" autocomplete="given-name">
+          </div>
+          <div>
+            <label class="block text-sm text-white/80 mb-1" for="email">E-mail*</label>
+            <input id="email" type="email" name="email" value="{{ prefill.get('email','') }}" required
+                   class="w-full rounded-xl px-4 py-3 text-black"
+                   placeholder="np. anna@example.com" autocomplete="email" inputmode="email">
+          </div>
+        </div>
+
+        <button class="w-full inline-flex items-center justify-center rounded-xl bg-white text-black font-semibold px-5 py-3 hover:opacity-90 transition text-base"
+                aria-label="Umów darmową lekcję teraz">
+          🚀 Umów darmową lekcję teraz
+        </button>
+
+        <p class="text-xs text-white/70 text-center">
+          Klikając przycisk, akceptujesz
+          <a href="https://slamy.online/warunki-uzytkowania/" target="_blank" rel="noopener noreferrer" class="underline">regulamin</a>
+          i
+          <a href="https://slamy.online/polityka-prywatnosci/" target="_blank" rel="noopener noreferrer" class="underline">politykę prywatności</a>.
+        </p>
+
+        <!-- Mini-USP pod przyciskiem (krótko i czytelnie) -->
+        <div class="grid gap-3 text-xs md:text-sm text-white/80 grid-cols-1 md:grid-cols-3">
+          <div class="bg-white/10 rounded-xl px-3 py-3 text-center min-h-[56px] flex items-center justify-center">
+            🎁 Pierwsza lekcja za 0 zł
+          </div>
+          <div class="bg-white/10 rounded-xl px-3 py-3 text-center min-h-[56px] flex items-center justify-center">
+            ✅ Bez zobowiązań
+          </div>
+          <div class="bg-white/10 rounded-xl px-3 py-3 text-center min-h-[56px] flex items-center justify-center">
+            👩‍🏫 Wyselekcjonowani lektorzy
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- SOCIAL PROOF -->
+    <aside class="space-y-5">
+      <!-- Gwiazdki / liczba opinii -->
+      <div class="flex items-center gap-3">
+        <div class="flex" aria-label="Ocena 4.9 na 5">
+          <span>⭐️⭐️⭐️⭐️⭐️</span>
+        </div>
+        <p class="text-white/80 text-sm">Średnia ocena <span class="font-semibold">4.9/5</span> na podstawie opinii rodziców i uczniów</p>
+      </div>
+
+      <!-- Profile lektorów -->
+      <div class="bg-white/10 rounded-2xl p-4">
+        <h2 class="font-semibold mb-3">Poznaj naszych lektorów</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Lektor 1 -->
+          <div class="flex items-center gap-3 bg-white/5 rounded-xl p-3">
+            <img src="/static/lectors/ola.jpg" alt="Ola – English Coach (Travel & Culture)" class="w-12 h-12 rounded-full object-cover">
+            <div>
+              <p class="font-semibold leading-tight">Ola</p>
+              <p class="text-xs text-white/70">Travel & Culture · 6 lat doświadczenia</p>
+            </div>
+          </div>
+          <!-- Lektor 2 -->
+          <div class="flex items-center gap-3 bg-white/5 rounded-xl p-3">
+            <img src="/static/lectors/marcin.jpg" alt="Marcin – Business English & IT" class="w-12 h-12 rounded-full object-cover">
+            <div>
+              <p class="font-semibold leading-tight">Marcin</p>
+              <p class="text-xs text-white/70">Business & IT · egzaminy FCE/IELTS</p>
+            </div>
+          </div>
+          <!-- Lektor 3 -->
+          <div class="flex items-center gap-3 bg-white/5 rounded-xl p-3">
+            <img src="/static/lectors/karolina.jpg" alt="Karolina – Conversation & Exams" class="w-12 h-12 rounded-full object-cover">
+            <div>
+              <p class="font-semibold leading-tight">Karolina</p>
+              <p class="text-xs text-white/70">Conversation · friendly & supportive</p>
+            </div>
+          </div>
+          <!-- Lektor 4 -->
+          <div class="flex items-center gap-3 bg-white/5 rounded-xl p-3">
+            <img src="/static/lectors/tomasz.jpg" alt="Tomasz – Finance & Presentations" class="w-12 h-12 rounded-full object-cover">
+            <div>
+              <p class="font-semibold leading-tight">Tomasz</p>
+              <p class="text-xs text-white/70">Finance & presentations · C1</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Opinie rodziców -->
+      <div class="bg-white/10 rounded-2xl p-4">
+        <h2 class="font-semibold mb-3">Co mówią rodzice i uczniowie</h2>
+        <div class="space-y-3">
+          <figure class="bg-white/5 rounded-xl p-3">
+            <blockquote class="text-sm text-white/90">„Córka pierwszy raz <span class="font-semibold">chciała rozmawiać po angielsku</span> o swoich pasjach. Świetne podejście!”</blockquote>
+            <figcaption class="text-xs text-white/60 mt-1">— Anna, mama Zosi (13 lat)</figcaption>
+          </figure>
+          <figure class="bg-white/5 rounded-xl p-3">
+            <blockquote class="text-sm text-white/90">„Lekcje pod IT i prezentacje — dokładnie to, czego potrzebowałem do pracy.”</blockquote>
+            <figcaption class="text-xs text-white/60 mt-1">— Krzysztof, specjalista ds. danych</figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <!-- Zaufanie / bezpieczeństwo -->
+      <div class="text-xs text-white/60">
+        Dane są bezpieczne. Używamy ich wyłącznie do kontaktu w sprawie lekcji próbnej.
+      </div>
+    </aside>
+  </div>
 {% endblock %}
