@@ -2,10 +2,8 @@
 {% block content %}
   <div class="space-y-6">
     <div class="text-center">
-      <h1 class="text-2xl md:text-3xl font-bold">POZNAJ LEKTORA, NIE OFERTĘ </h1>
-      <p class="text-white/80 mt-2">
-        Przetestuj bezpłatnie, bez zobowiązań
-      </p>
+      <h1 class="text-2xl md:text-3xl font-bold">POZNAJ LEKTORA, NIE OFERTĘ</h1>
+      <p class="text-white/80 mt-2">Przetestuj bezpłatnie, bez zobowiązań</p>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -36,7 +34,7 @@
         </div>
       </div>
 
-      <!-- Telefon (pełna szerokość) -->
+      <!-- Telefon (opcjonalnie) -->
       <div>
         <label class="block text-sm text-white/80 mb-1">Telefon (opcjonalnie)</label>
         <input type="tel" name="phone" value="{{ prefill.get('phone','') }}"
@@ -47,28 +45,52 @@
       <!-- Zgody -->
       <div class="space-y-2">
         <label class="inline-flex items-start gap-2">
-          <input type="checkbox" name="consent" class="mt-1" {% if prefill.get('consent') %}checked{% endif %}>
+          <input type="checkbox" name="consent" class="mt-1" {% if prefill.get('consent') %}checked{% endif %} required>
           <span class="text-sm text-white/80">Akceptuję regulamin i politykę prywatności oraz wyrażam zgodę na kontakt w sprawie lekcji. *</span>
         </label>
       </div>
 
-      <!-- CTA -->
-      <button class="w-full inline-flex items-center justify-center rounded-xl bg-white text-black font-semibold px-5 py-3 hover:opacity-90 transition">
-        Zarezerwuj bezpłatną lekcję
+      <!-- CTA — brand gradient + glow -->
+      <button type="submit" id="ctaSubmit"
+        class="group relative w-full inline-flex items-center justify-center rounded-xl
+               bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-cyan-400
+               text-white font-semibold md:text-lg py-3.5 px-6
+               shadow-lg shadow-indigo-500/20 hover:shadow-cyan-500/30
+               transition-all duration-200 active:scale-[.99]
+               focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/30
+               disabled:opacity-60 disabled:cursor-not-allowed">
+        <span class="pointer-events-none">Zarezerwuj bezpłatną lekcję</span>
+        <svg class="ml-2 w-5 h-5 translate-x-0 group-hover:translate-x-0.5 transition-transform pointer-events-none"
+             viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </button>
 
       <!-- USP badges -->
       <div class="grid gap-3 text-xs md:text-sm text-white/80 grid-cols-1 md:grid-cols-3">
         <div class="bg-white/10 rounded-xl px-3 py-3 text-center leading-snug min-h-[56px] flex items-center justify-center">
-           0 zł za pierwszą
+          🎁 0 zł za pierwszą lekcję
         </div>
         <div class="bg-white/10 rounded-xl px-3 py-3 text-center leading-snug min-h-[56px] flex items-center justify-center">
-          Bez zobowiązań
+          ✅ Bez zobowiązań
         </div>
         <div class="bg-white/10 rounded-xl px-3 py-3 text-center leading-snug min-h-[56px] flex items-center justify-center">
-          Wyselekcjonowani lektorzy
+          👩‍🏫 Wyselekcjonowani lektorzy
         </div>
       </div>
     </form>
+
+    <!-- Disable CTA on submit (anty double-click) -->
+    <script>
+      (function () {
+        const form = document.currentScript.closest('form');
+        const btn = document.getElementById('ctaSubmit');
+        if (!form || !btn) return;
+        form.addEventListener('submit', () => {
+          btn.disabled = true;
+          btn.setAttribute('aria-busy', 'true');
+        });
+      })();
+    </script>
   </div>
 {% endblock %}
